@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  password     String
+  role         String        @default("client")  // client | owner | admin
+  createdAt    DateTime      @default(now())
+  reservations Reservation[] @relation("ClientReservations")
+  venues       Venue[]       @relation("OwnerVenues")
+  wishlist     Wishlist[]
+}
+
+model Venue {
+  id           String        @id @default(cuid())
+  name         String
+  location     String
+  capacity     Int
+  price        Float
+  description  String?
+  image        String?
+  ownerId      String
+  owner        User          @relation("OwnerVenues", fields: [ownerId], references: [id])
+  reservations Reservation[]
+  wishlist     Wishlist[]
+  createdAt    DateTime      @default(now())
+}
+
+model Reservation {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   @default("pending")  // pending | confirmed | rejected
+  guests    Int
+  eventType String?
+  clientId  String
+  venueId   String
+  client    User     @relation("ClientReservations", fields: [clientId], references: [id])
+  venue     Venue    @relation(fields: [venueId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Wishlist {
+  id      String @id @default(cuid())
+  userId  String
+  venueId String
+  user    User   @relation(fields: [userId], references: [id])
+  venue   Venue  @relation(fields: [venueId], references: [id])
+
+  @@unique([userId, venueId])
+}

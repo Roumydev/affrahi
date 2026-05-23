@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  /* --- Burgundy Scale  --- */
+  --color-burgundy-50: #fdf6f7;
+  --color-burgundy-100: #fae8ea;
+  --color-burgundy-200: #f5d1d5;
+  --color-burgundy-300: #eba8b0;
+  --color-burgundy-400: #dd7484;
+  --color-burgundy-500: #c94d61; /* primary*/
+  --color-burgundy-600: #a92e46;
+  --color-burgundy-700: #8b1538; /* Burgundy 700 [cite: 574] */
+  --color-burgundy-800: #6b0f2c;
+  --color-burgundy-900: #4f0a21;
+
+  /* --- Gold Scale (الذهبي الفاخر)  --- */
+  --color-gold-50: #fdfbf7;
+  --color-gold-100: #faf5e8;
+  --color-gold-200: #f4e9c8;
+  --color-gold-300: #ebd89a;
+  --color-gold-400: #dfc46b;
+  --color-gold-500: #c9a962; /* Champagne Gold [cite: 507, 514] */
+  --color-gold-600: #b38f4a;
+  --color-gold-700: #8b6e38;
+  --color-gold-800: #6b542b;
+  --color-gold-900: #4d3d1f;
+
+  /* --- Neutral & Charcoal Scale (الرمادي والأسود الفحمي) [cite: 506, 508] --- */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f8f7f5;
+  --color-neutral-200: #f4f3f1;
+  --color-neutral-300: #e8e6e3;
+  --color-neutral-400: #d1cfc9;
+  --color-neutral-500: #9e9b94;
+  --color-neutral-600: #6f6d67;
+  --color-neutral-700: #4d4b47;
+  --color-neutral-800: #33322f;
+  --color-neutral-900: #1c1b19;
+  --color-charcoal: #2b2b2b; /* Charcoal  */
+  /* --- Semantic Colors (التنبيهات والمساجات) --- */
+  /* Success - الأخضر */
+  --color-success-50: #f0fdf4;
+  --color-success-500: #22c55e;
+  --color-success-700: #15803d;
+
+  /* Error - الأحمر */
+  --color-error-50: #fef2f2;
+  --color-error-500: #ef4444;
+  --color-error-700: #b91c1c;
+
+  /* Warning - الأصفر/البرتقالي */
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-700: #b45309;
+
+  /* Information - الأزرق */
+  --color-info-50: #eff6ff;
+  --color-info-500: #3b82f6;
+  --color-info-700: #1d4ed8;
+
+  /* --- Typography System (الخطوط) [cite: 516, 517] --- */
+  --font-heading: "Cormorant Garamond", serif; /* [cite: 519] */
+  --font-body: "Montserrat", sans-serif; /* [cite: 521] */
+
+  /* --- Shadows (الظلال) [cite: 550] --- */
+  --shadow-sm: 0 2px 4px rgba(43, 43, 43, 0.06); /* Basic Card  */
+  --shadow-md: 0 4px 8px rgba(43, 43, 43, 0.08); /* Elevated Card  */
+  --shadow-lg: 0 8px 16px rgba(43, 43, 43, 0.1); /* Featured Card  */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-neutral-50); /* [cite: 508] */
+  color: var(--color-charcoal); /*  */
+  font-family: var(--font-body); /* [cite: 576] */
+  -webkit-font-smoothing: antialiased;
+}
