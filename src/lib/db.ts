@@ -1,15 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaBetterSqlite3({
-    url: "file:C:/Users/HIGH TECH/Desktop/afrahi/prisma/dev.db",
-  });
-  return new PrismaClient({ adapter });
+  // هنا بريزما راح تقرأ تلقائياً الـ DATABASE_URL اللي حطيناه في Vercel وفي الـ .env
+  return new PrismaClient();
 }
 
 export const db = globalForPrisma.prisma ?? createPrismaClient();
