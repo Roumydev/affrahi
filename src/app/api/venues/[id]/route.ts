@@ -26,12 +26,12 @@ export async function PATCH(
   if (!decoded || decoded.role !== "owner")
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-  const { name, location, capacity, price, description, image } =
+  const { name, location, capacity, price, description, image, phone } =
     await req.json();
 
   const venue = await db.venue.update({
     where: { id },
-    data: { name, location, capacity, price, description, image },
+    data: { name, location, capacity, price, description, image, phone },
   });
 
   return NextResponse.json({ venue });

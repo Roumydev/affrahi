@@ -1,70 +1,51 @@
+"use client";
 import React from "react";
+import { useLang } from "@/context/LangContext";
 
-const values = [
-  {
-    title: "Excellence",
-    description: "We maintain the highest standards in every venue we feature",
-    icon: "/heart.svg", // تأكدي من وجود هذه الأسماء في مجلد public
-  },
-  {
-    title: "Trust",
-    description: "Transparent pricing and honest service you can rely on",
-    icon: "/shield.svg",
-  },
-  {
-    title: "Innovation",
-    description:
-      "Continuously improving our platform for better user experience",
-    icon: "/icon-experience.svg",
-  },
-];
+const icons = ["/heart.svg", "/shield.svg", "/icon-experience.svg"];
+const iconFilter =
+  "brightness(0) saturate(100%) invert(14%) sepia(61%) saturate(3755%) hue-rotate(334deg) brightness(91%) contrast(98%)";
 
 const OurValues = () => {
+  const { t } = useLang();
+  const v = t.about.values;
   return (
-    <section className="w-full bg-white pt-10 pb-10 px-[24px] flex flex-col items-center">
-      {/* Header Section */}
-      <div className="text-center mb-12">
-        <h2 className="font-cormorant text-[#1A1A1A] text-4xl font-bold mb-4">
-          Our Values
-        </h2>
-        <p className="font-montserrat text-[#4A4A4A] text-lg">
-          The principles that guide everything we do
-        </p>
-      </div>
-
-      {/* Values Grid - Gap 48px as per Figma */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-[48px]">
-        {values.map((value, index) => (
-          <div
-            key={index}
-            className="flex flex-col items-center text-center p-8 transition-all duration-300 hover:shadow-sm"
-            style={{
-              borderRadius: "16px",
-              border: "1px solid #E8E6E3",
-              background: "#FDF6F7", // اللون الخلفي الفاتح جداً من Figma
-            }}
-          >
-            {/* Icon Container - 32x32 as per Figma */}
-            <div className="mb-6 flex items-center justify-center">
-              <img
-                src={value.icon}
-                alt={value.title}
-                className="w-8 h-8 object-contain"
-                style={{
-                  filter:
-                    "brightness(0) saturate(100%) invert(14%) sepia(61%) saturate(3755%) hue-rotate(334deg) brightness(91%) contrast(98%)",
-                }}
-              />
+    <section className="w-full bg-white py-12 sm:py-16 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-10 sm:mb-12">
+          <span className="font-body text-burgundy-600 text-[11px] font-bold uppercase tracking-[0.2em] mb-3 block">
+            {v.badge}
+          </span>
+          <h2 className="font-heading text-neutral-900 text-[32px] sm:text-[44px] font-bold leading-tight">
+            {v.title}
+          </h2>
+          <p className="font-body text-neutral-600 text-[14px] sm:text-[15px] mt-3">
+            {v.subtitle}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
+          {v.items.map((item, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center text-center p-7 sm:p-8 rounded-2xl border border-neutral-300 bg-burgundy-50 hover:shadow-md transition-all duration-300"
+            >
+              <div className="w-12 h-12 bg-burgundy-100 rounded-full flex items-center justify-center mb-5">
+                <img
+                  src={icons[i]}
+                  alt={item.title}
+                  className="w-6 h-6"
+                  style={{ filter: iconFilter }}
+                />
+              </div>
+              <h3 className="font-heading text-neutral-900 text-[22px] font-bold mb-3">
+                {item.title}
+              </h3>
+              <p className="font-body text-neutral-600 text-[13px] sm:text-[14px] leading-relaxed">
+                {item.desc}
+              </p>
             </div>
-
-            <h3 className="font-cormorant text-[#1A1A1A] text-2xl font-bold mb-4">
-              {value.title}
-            </h3>
-            <p className="font-montserrat text-[#4A4A4A] text-sm leading-relaxed">
-              {value.description}
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -1,10 +1,11 @@
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "outline";
+  variant?: "primary" | "secondary" | "outline" | "ghost";
   className?: string;
   onClick?: () => void;
   style?: React.CSSProperties;
-  type?: "button" | "submit" | "reset"; // <--- أضف هذا السطر هنا
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
 const Button = ({
@@ -13,25 +14,25 @@ const Button = ({
   className = "",
   onClick,
   style,
-  type = "button", // <--- استقبله هنا واعطيه قيمة افتراضية
+  type = "button",
+  disabled,
 }: ButtonProps) => {
-  const baseStyles =
-    "px-8 py-3 rounded-lg font-bold font-montserrat transition-all duration-300 text-sm md:text-base text-center";
-
+  const base =
+    "px-7 py-3 rounded-lg font-body font-semibold transition-all duration-200 text-[14px] text-center inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95";
   const variants = {
-    primary:
-      "bg-[#C9A962] text-[#2B2B2B] hover:bg-[#b39552] active:scale-95 shadow-md",
-    secondary: "bg-[#8B1538] text-white hover:bg-[#6B0F2C] active:scale-95",
+    primary: "bg-gold-500 text-neutral-900 hover:bg-gold-400 shadow-sm",
+    secondary: "bg-burgundy-700 text-white hover:bg-burgundy-800",
     outline:
-      "border-2 border-white text-white hover:bg-white/10 active:scale-95",
+      "border-2 border-burgundy-700 text-burgundy-700 hover:bg-burgundy-700 hover:text-white",
+    ghost: "text-burgundy-700 hover:bg-burgundy-50",
   };
-
   return (
     <button
-      type={type} // <--- مرره هنا للزر الحقيقي
+      type={type}
       onClick={onClick}
       style={style}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      disabled={disabled}
+      className={`${base} ${variants[variant]} ${className}`}
     >
       {children}
     </button>

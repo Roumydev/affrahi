@@ -1,5 +1,6 @@
 import React from "react";
 import { Heart, MapPin, Users, Star, MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 interface WishlistCardProps {
   name: string;
@@ -9,6 +10,8 @@ interface WishlistCardProps {
   rating: number;
   reviews: number;
   image: string;
+  venueId?: string;
+  onRemove?: () => void;
 }
 
 export const WishlistCard = ({
@@ -19,15 +22,17 @@ export const WishlistCard = ({
   rating,
   reviews,
   image,
+  venueId,
+  onRemove,
 }: WishlistCardProps) => {
   return (
-    <div className="w-full bg-white rounded-2xl border border-stone-300 p-6 flex flex-col md:flex-row gap-6 overflow-hidden transition-all duration-300 hover:shadow-sm">
-      {/* Image Container */}
+    <div className="w-full bg-white rounded-2xl border border-stone-300 p-6 flex flex-col md:flex-row gap-6 overflow-hidden transition-all duration-300 hover:shadow-md">
+      {/* Image */}
       <div className="w-full md:w-64 h-44 bg-gray-100 rounded-[10px] flex-shrink-0 overflow-hidden">
-        <img src={image} alt="" className="w-full h-full object-cover" />
+        <img src={image} alt={name} className="w-full h-full object-cover" />
       </div>
 
-      {/* Content Section */}
+      {/* Content */}
       <div className="flex-1 flex flex-col gap-3">
         <div className="flex justify-between items-start">
           <div className="space-y-1">
@@ -39,8 +44,11 @@ export const WishlistCard = ({
               <span>{location}</span>
             </div>
           </div>
-          {/* Heart Button */}
-          <button className="p-2.5 bg-[#8B1538] text-white rounded-[12px] hover:bg-[#6d102c] transition-colors">
+          <button
+            onClick={onRemove}
+            title="Remove from wishlist"
+            className="p-2.5 bg-[#8B1538] text-white rounded-[12px] hover:bg-[#6d102c] transition-colors"
+          >
             <Heart size={20} fill="currentColor" />
           </button>
         </div>
@@ -52,11 +60,13 @@ export const WishlistCard = ({
             <span>Up to {capacity} guests</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm font-['Inter']">
-            <Star size={16} className="text-amber-400 fill-amber-400" />
-            <span className="text-zinc-800 font-medium">{rating}</span>
-            <span className="text-neutral-400">({reviews} reviews)</span>
-          </div>
+          {rating > 0 && (
+            <div className="flex items-center gap-2 text-sm font-['Inter']">
+              <Star size={16} className="text-amber-400 fill-amber-400" />
+              <span className="text-zinc-800 font-medium">{rating}</span>
+              <span className="text-neutral-400">({reviews} reviews)</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-1 text-sm font-['Inter']">
             <span className="text-[#8B1538] font-bold text-base">
@@ -66,11 +76,14 @@ export const WishlistCard = ({
           </div>
         </div>
 
-        {/* Buttons Section */}
+        {/* Buttons */}
         <div className="flex gap-3 pt-2">
-          <button className="flex-1 bg-[#8B1538] text-white py-3 rounded-[10px] text-base font-medium font-['Inter'] hover:opacity-90 transition-opacity">
+          <Link
+            href={venueId ? `/browse-halls/${venueId}` : "/browse-halls"}
+            className="flex-1 text-center bg-[#8B1538] text-white py-3 rounded-[10px] text-base font-medium font-['Inter'] hover:opacity-90 transition-opacity"
+          >
             Book Now
-          </button>
+          </Link>
           <button className="flex items-center justify-center gap-2 px-6 py-3 border border-stone-300 rounded-[10px] text-zinc-800 font-medium font-['Inter'] hover:bg-stone-50 transition-colors">
             <MessageSquare size={18} />
             Contact Owner

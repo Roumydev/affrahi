@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyToken } from "@/lib/auth";
 
-// GET — client يشوف reservations تاعو / owner يشوف طلبات venues تاعو
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -37,7 +36,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST — client يعمل reservation جديد
 export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -45,9 +43,41 @@ export async function POST(req: NextRequest) {
     if (!decoded || decoded.role !== "client")
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { venueId, date, guests, eventType } = await req.json();
+    const { venueId, date, guests, eventType, clientPhone } = await req.json();
     if (!venueId || !date || !guests)
       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
+
+    const bookingDate = new Date(date);
+    bookingDate.setHours(0, 0, 0, 0);
+    const nextDay = new Date(bookingDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const existing = await db.reservation.findFirst({
+      where: {
+        venueId,
+        date: {
+          gte: bookingDate,
+          lt: nextDay,
+        },
+        OR: [
+          { status: "confirmed" },
+          {
+            status: "pending",
+            createdAt: { gte: twentyFourHoursAgo },
+          },
+        ],
+      },
+    });
+
+    if (existing) {
+      const message =
+        existing.status === "confirmed"
+          ? "This date is already booked. Please choose another date."
+          : "This date has a pending reservation. Please try again later or choose another date.";
+      return NextResponse.json({ message }, { status: 400 });
+    }
 
     const reservation = await db.reservation.create({
       data: {
@@ -56,6 +86,7 @@ export async function POST(req: NextRequest) {
         date: new Date(date),
         guests: Number(guests),
         eventType,
+        clientPhone,
         status: "pending",
       },
     });

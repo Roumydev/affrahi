@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { verifyToken } from "@/lib/auth";
 
-// GET — كل الـ venues (للعموم)
 export async function GET() {
   try {
     const venues = await db.venue.findMany({
@@ -10,12 +9,15 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json({ venues });
-  } catch {
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  } catch (error) {
+    console.error("❌ Venues API Error:", error);
+    return NextResponse.json(
+      { message: "Server error", error: String(error) },
+      { status: 500 },
+    );
   }
 }
 
-// POST — owner يضيف venue جديد
 export async function POST(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (!decoded || decoded.role !== "owner")
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { name, location, capacity, price, description, image } =
+    const { name, location, capacity, price, description, image, phone } =
       await req.json();
 
     if (!name || !location || !capacity || !price)
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest) {
         price: Number(price),
         description,
         image,
+        phone,
         ownerId: decoded.id,
       },
     });

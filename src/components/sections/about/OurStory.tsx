@@ -1,39 +1,34 @@
+"use client";
 import React from "react";
+import { useLang } from "@/context/LangContext";
 
 const OurStory = () => {
+  const { t } = useLang();
+  const s = t.about.story;
   return (
-    // التعديل هنا: غيرنا py-20 لـ pt-20 (فوق) و pb-10 (تحت)
-    <section className="pt-20 pb-10 px-[24px] bg-white flex flex-col items-center w-full">
-      <div className="w-full flex flex-col items-start gap-12">
-        <div className="flex flex-col gap-4 text-left w-full">
-          <h2 className="font-cormorant text-[#1A1A1A] text-5xl font-bold">
-            Our Story
+    <section className="w-full bg-white pt-16 sm:pt-20 pb-10 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-10">
+        <div>
+          <span className="font-body text-burgundy-600 text-[11px] font-bold uppercase tracking-[0.2em] mb-3 block">
+            {s.badge}
+          </span>
+          <h2 className="font-heading text-neutral-900 text-[36px] sm:text-[48px] font-bold mb-6 leading-tight">
+            {s.title}
           </h2>
-          <div className="flex flex-col gap-6 text-[#4A4A4A] font-montserrat text-lg leading-relaxed max-w-[800px]">
-            <p>
-              Afrahi was founded with a simple mission: to make finding and
-              booking the perfect luxury event hall effortless.
-            </p>
-            <p>
-              We understand that your special moments deserve exceptional
-              venues, and we're here to connect you with Algeria's finest event
-              spaces.
-            </p>
+          <div className="flex flex-col gap-5 font-body text-neutral-600 text-[15px] sm:text-[16px] leading-relaxed max-w-3xl">
+            <p>{s.p1}</p>
+            <p>{s.p2}</p>
           </div>
         </div>
-
         <div
-          className="w-full h-[408px] rounded-[24px] overflow-hidden"
+          className="w-full h-[280px] sm:h-[380px] rounded-2xl overflow-hidden"
           style={{
             backgroundImage: 'url("/our-story-palace.png")',
-            backgroundPosition: "50%",
+            backgroundPosition: "center",
             backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            backgroundColor: "lightgray",
-            boxShadow:
-              "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
           }}
-        ></div>
+        />
       </div>
     </section>
   );

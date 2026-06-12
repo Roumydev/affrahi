@@ -1,24 +1,25 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
- 
-
 }
 
 model User {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  password     String
-  role         String        @default("client")  // client | owner | admin
-  createdAt    DateTime      @default(now())
-  reservations Reservation[] @relation("ClientReservations")
-  venues       Venue[]       @relation("OwnerVenues")
-  wishlist     Wishlist[]
+  id               String        @id @default(cuid())
+  name             String
+  email            String        @unique
+  password         String
+  role             String        @default("client")
+  createdAt        DateTime      @default(now())
+  receivedMessages Message[]     @relation("ReceivedMessages")
+  sentMessages     Message[]     @relation("SentMessages")
+  reports          Report[]
+  reservations     Reservation[] @relation("ClientReservations")
+  reviews          Review[]
+  venues           Venue[]       @relation("OwnerVenues")
+  wishlist         Wishlist[]
 }
 
 model Venue {
@@ -29,24 +30,28 @@ model Venue {
   price        Float
   description  String?
   image        String?
+  phone        String?   
   ownerId      String
-  owner        User          @relation("OwnerVenues", fields: [ownerId], references: [id])
-  reservations Reservation[]
-  wishlist     Wishlist[]
   createdAt    DateTime      @default(now())
+  reservations Reservation[]
+  reviews      Review[]
+  owner        User          @relation("OwnerVenues", fields: [ownerId], references: [id])
+  wishlist     Wishlist[]
 }
 
 model Reservation {
-  id        String   @id @default(cuid())
-  date      DateTime
-  status    String   @default("pending")  // pending | confirmed | rejected
-  guests    Int
-  eventType String?
-  clientId  String
-  venueId   String
-  client    User     @relation("ClientReservations", fields: [clientId], references: [id])
-  venue     Venue    @relation(fields: [venueId], references: [id])
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  date        DateTime
+  status      String   @default("pending")
+  guests      Int
+  eventType   String?
+  clientPhone String? 
+  clientId    String
+  venueId     String
+  createdAt   DateTime @default(now())
+  client      User     @relation("ClientReservations", fields: [clientId], references: [id])
+  venue       Venue    @relation(fields: [venueId], references: [id])
+  review      Review?
 }
 
 model Wishlist {
@@ -57,4 +62,39 @@ model Wishlist {
   venue   Venue  @relation(fields: [venueId], references: [id])
 
   @@unique([userId, venueId])
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  userId        String
+  venueId       String
+  reservationId String      @unique
+  rating        Int
+  comment       String
+  createdAt     DateTime    @default(now())
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+  venue         Venue       @relation(fields: [venueId], references: [id])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String
+  createdAt  DateTime @default(now())
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  userId      String
+  subject     String
+  description String
+  category    String   @default("other")
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  adminReply  String?
+  user        User     @relation(fields: [userId], references: [id])
 }

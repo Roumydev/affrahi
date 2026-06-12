@@ -1,172 +1,184 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
 
-// 1. Definition of the Props Interface for TypeScript
-interface ReservationCardProps {
-  title: string;
-  location: string;
-  status: string;
+type Reservation = {
+  id: string;
   date: string;
-  guests: string;
-  type: string;
-  total: string;
-  paid: string;
-  statusColor: string;
-  actions: React.ReactNode;
-}
+  status: string;
+  guests: number;
+  eventType?: string;
+  venue: { name: string; location: string; price: number };
+};
 
-// 2. ReservationCard Component with SVG Icons
-const ReservationCard = ({
-  title,
-  location,
-  status,
-  date,
-  guests,
-  type,
-  total,
-  paid,
-  statusColor,
-  actions,
-}: ReservationCardProps) => (
-  <div className="w-full p-6 bg-white rounded-2xl border border-stone-300 flex flex-col gap-4 mb-6">
-    <div className="flex justify-between items-start">
-      <div className="flex flex-col gap-1">
-        <h3 className="text-zinc-800 text-xl font-medium font-['Inter']">
-          {title}
-        </h3>
-        <div className="flex items-center gap-2 text-neutral-500 text-sm font-['Inter']">
-          <img src="/location-pin.svg" alt="location" width={16} height={16} />
-          {location}
-        </div>
-      </div>
-      <div
-        className={`px-3 py-1 rounded-[10px] text-sm font-['Inter'] ${statusColor}`}
-      >
-        {status}
-      </div>
-    </div>
+const statusCfg: Record<string, { bg: string; text: string }> = {
+  confirmed: { bg: "bg-success-50", text: "text-success-700" },
+  rejected: { bg: "bg-error-50", text: "text-error-700" },
+  pending: { bg: "bg-warning-50", text: "text-warning-700" },
+};
 
-    {/* Details Section */}
-    <div className="grid grid-cols-2 gap-4 p-4 bg-stone-100 rounded-[10px]">
-      <div className="flex items-center gap-3">
-        <img src="/calendar.svg" alt="calendar" width={20} height={20} />
-        <div>
-          <p className="text-neutral-500 text-sm font-['Inter']">Date & Time</p>
-          <p className="text-zinc-800 text-base font-medium font-['Inter']">
-            {date}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <img src="/users.svg" alt="guests" width={20} height={20} />
-        <div>
-          <p className="text-neutral-500 text-sm font-['Inter']">Guest Count</p>
-          <p className="text-zinc-800 text-base font-medium font-['Inter']">
-            {guests} guests
-          </p>
-        </div>
-      </div>
-    </div>
+export default function MyReservations() {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    {/* Financial Info Section */}
-    <div className="grid grid-cols-3 gap-4 border-t border-stone-200 pt-4">
-      <div>
-        <p className="text-neutral-500 text-sm font-['Inter']">Event Type</p>
-        <p className="text-zinc-800 text-base font-medium font-['Inter']">
-          {type}
-        </p>
-      </div>
-      <div>
-        <p className="text-neutral-500 text-sm font-['Inter']">Total Amount</p>
-        <p className="text-zinc-800 text-base font-medium font-['Inter']">
-          ${total}
-        </p>
-      </div>
-      <div>
-        <p className="text-neutral-500 text-sm font-['Inter']">Amount Paid</p>
-        <p className="text-green-600 text-base font-medium font-['Inter']">
-          ${paid}
-        </p>
-      </div>
-    </div>
+  useEffect(() => {
+    axios.get("/api/reservations").then((r) => {
+      setReservations(r.data.reservations || []);
+      setLoading(false);
+    });
+  }, []);
 
-    {/* Action Buttons */}
-    <div className="flex gap-3 mt-2">{actions}</div>
-  </div>
-);
+  const handleCancel = async (id: string) => {
+    if (!confirm("Cancel this reservation?")) return;
+    try {
+      await axios.delete(`/api/reservations/${id}`);
+      setReservations((p) => p.filter((r) => r.id !== id));
+    } catch {}
+  };
 
-// 3. Main Page Component
-const MyReservations = () => {
+  if (loading)
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="font-body text-neutral-500">Loading...</p>
+      </div>
+    );
+
   return (
-    <div className="w-full min-h-screen bg-stone-50 font-['Inter'] p-8">
+    <div className="w-full min-h-screen bg-neutral-100 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-zinc-800 text-2xl font-bold font-['Tinos']">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-7">
+          <h2 className="font-heading text-neutral-900 text-[28px] font-bold">
             My Reservations
           </h2>
-          <span className="text-neutral-500 font-medium">3 reservations</span>
+          <span className="font-body text-neutral-500 text-[13px]">
+            {reservations.length} reservation
+            {reservations.length !== 1 ? "s" : ""}
+          </span>
         </div>
 
-        {/* Reservation 1: Confirmed */}
-        <ReservationCard
-          title="Royal Grand Ballroom"
-          location="Riyadh, King Fahd District"
-          status="Confirmed"
-          statusColor="bg-green-100 text-green-700"
-          date="June 15, 2026 • 6:00 PM"
-          guests="300"
-          type="Wedding"
-          total="25,000"
-          paid="5,000"
-          actions={
-            <>
-              <button className="px-6 py-2 bg-rose-900 text-white rounded-[10px] font-medium">
-                View Details
-              </button>
-              <button className="px-6 py-2 border border-stone-300 text-zinc-800 rounded-[10px] font-medium">
-                Modify Reservation
-              </button>
-            </>
-          }
-        />
+        {reservations.length === 0 && (
+          <div className="bg-white rounded-2xl p-12 sm:p-16 text-center border border-neutral-300">
+            <div className="w-14 h-14 bg-burgundy-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <img src="/calendar.svg" alt="" className="w-7 h-7" />
+            </div>
+            <p className="font-body text-neutral-600 text-[15px] mb-5">
+              No reservations yet
+            </p>
+            <Link
+              href="/browse-halls"
+              className="inline-block px-6 py-2.5 bg-burgundy-700 text-white rounded-lg font-body text-[13px] font-semibold hover:bg-burgundy-800 transition-colors"
+            >
+              Browse Halls
+            </Link>
+          </div>
+        )}
 
-        {/* Reservation 2: Pending */}
-        <ReservationCard
-          title="Golden Palm Hall"
-          location="Dammam, Beachfront"
-          status="Pending"
-          statusColor="bg-yellow-100 text-yellow-700"
-          date="July 25, 2026 • 7:00 PM"
-          guests="200"
-          type="Graduation"
-          total="20,000"
-          paid="0"
-          actions={
-            <button className="px-6 py-2 border border-red-600 text-red-600 rounded-[10px] font-medium">
-              Cancel Reservation
-            </button>
-          }
-        />
+        <div className="flex flex-col gap-5">
+          {reservations.map((r) => {
+            const cfg = statusCfg[r.status] || statusCfg.pending;
+            return (
+              <div
+                key={r.id}
+                className="bg-white rounded-2xl border border-neutral-300 overflow-hidden"
+                style={{ boxShadow: "0 4px 8px rgba(43,43,43,0.07)" }}
+              >
+                <div
+                  className={`h-1 w-full ${r.status === "confirmed" ? "bg-success-500" : r.status === "rejected" ? "bg-error-500" : "bg-warning-500"}`}
+                />
+                <div className="p-5 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                    <div>
+                      <h3 className="font-heading text-neutral-900 text-[21px] font-bold">
+                        {r.venue.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-neutral-500 mt-1">
+                        <img
+                          src="/location-pin.svg"
+                          alt=""
+                          className="w-3.5 h-3.5"
+                        />
+                        <span className="font-body text-[13px]">
+                          {r.venue.location}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`self-start px-3 py-1.5 rounded-full font-body text-[10px] font-bold uppercase tracking-wider ${cfg.bg} ${cfg.text}`}
+                    >
+                      {r.status}
+                    </span>
+                  </div>
 
-        {/* Reservation 3: Completed */}
-        <ReservationCard
-          title="Elegant Jasmine Hall"
-          location="Jeddah, Corniche"
-          status="Completed"
-          statusColor="bg-blue-100 text-blue-700"
-          date="March 15, 2026 • 5:00 PM"
-          guests="300"
-          type="Wedding"
-          total="18,000"
-          paid="18,000"
-          actions={
-            <button className="px-6 py-2 bg-rose-900 text-white rounded-[10px] font-medium">
-              Add Review
-            </button>
-          }
-        />
+                  <div className="grid grid-cols-2 gap-3 p-4 bg-neutral-100 rounded-xl mb-4">
+                    {[
+                      {
+                        icon: "/calendar.svg",
+                        label: "Date",
+                        val: new Date(r.date).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }),
+                      },
+                      {
+                        icon: "/users.svg",
+                        label: "Guest Count",
+                        val: `${r.guests} guests`,
+                      },
+                      {
+                        icon: "/sparkle.svg",
+                        label: "Event Type",
+                        val: r.eventType || "—",
+                      },
+                      {
+                        icon: "/phone.svg",
+                        label: "Venue Price",
+                        val: `${r.venue.price.toLocaleString()} DA`,
+                      },
+                    ].map(({ icon, label, val }) => (
+                      <div key={label} className="flex items-start gap-2.5">
+                        <img
+                          src={icon}
+                          alt=""
+                          className="w-4 h-4 mt-0.5 opacity-60"
+                        />
+                        <div>
+                          <p className="font-body text-neutral-500 text-[11px]">
+                            {label}
+                          </p>
+                          <p className="font-body text-neutral-900 text-[13px] font-semibold">
+                            {val}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-3">
+                    {r.status === "pending" && (
+                      <button
+                        onClick={() => handleCancel(r.id)}
+                        className="px-5 py-2 border border-error-500 text-error-700 rounded-lg font-body font-semibold text-[13px] hover:bg-error-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    {r.status === "confirmed" && (
+                      <Link
+                        href="/browse-halls"
+                        className="inline-block px-5 py-2 bg-burgundy-700 text-white rounded-lg font-body font-semibold text-[13px] hover:bg-burgundy-800 transition-colors"
+                      >
+                        Book Another
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
-};
-
-export default MyReservations;
+}
