@@ -1,10 +1,10 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { WishlistCard } from "@/components/ui/WishlistCard";
 import axios from "axios";
 import Link from "next/link";
 import { Heart } from "lucide-react";
+import { useLang } from "@/context/LangContext";
 
 type WishlistItem = {
   id: string;
@@ -21,6 +21,8 @@ type WishlistItem = {
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLang();
+  const w = t.wishlistPage;
 
   useEffect(() => {
     axios
@@ -35,58 +37,52 @@ export default function WishlistPage() {
   const handleRemove = async (venueId: string) => {
     try {
       await axios.delete("/api/wishlist", { data: { venueId } });
-      setWishlist((prev) => prev.filter((w) => w.venue.id !== venueId));
-    } catch {
-      // ignore
-    }
+      setWishlist((prev) => prev.filter((item) => item.venue.id !== venueId));
+    } catch {}
   };
 
   if (loading)
     return (
       <div className="flex items-center justify-center py-32">
-        <p className="text-gray-400">Loading...</p>
+        <p className="text-gray-400">{w.loading}</p>
       </div>
     );
 
   return (
     <div className="w-full space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-zinc-800 text-3xl font-bold">Favorite Halls</h2>
-          <p className="text-neutral-400 text-sm mt-1">
-            Your saved venues for quick booking
-          </p>
+          <h2 className="text-zinc-800 text-3xl font-bold">{w.title}</h2>
+          <p className="text-neutral-400 text-sm mt-1">{w.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="px-4 py-1.5 bg-[#F9F1F3] text-[#8B1538] rounded-full text-sm font-bold">
-            {wishlist.length} {wishlist.length === 1 ? "hall" : "halls"}
+            {wishlist.length} {wishlist.length === 1 ? w.hall : w.halls}
           </span>
           <Link
             href="/browse-halls"
             className="px-5 py-2 bg-[#8B1538] text-white rounded-xl text-sm font-bold hover:bg-[#6d102c] transition"
           >
-            + Add More
+            {w.addMore}
           </Link>
         </div>
       </div>
-
       {wishlist.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[32px] border border-gray-100">
           <div className="p-6 bg-[#F9F1F3] rounded-full mb-6">
             <Heart size={36} className="text-[#8B1538]" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
-            No favorites yet
+            {w.noFavorites}
           </h3>
           <p className="text-gray-400 mb-6 text-center max-w-xs">
-            Start exploring halls and save the ones you love for quick access
+            {w.noFavoritesDesc}
           </p>
           <Link
             href="/browse-halls"
             className="px-8 py-3 bg-[#8B1538] text-white rounded-xl font-bold hover:bg-[#6d102c] transition"
           >
-            Browse Halls
+            {w.browseHalls}
           </Link>
         </div>
       ) : (

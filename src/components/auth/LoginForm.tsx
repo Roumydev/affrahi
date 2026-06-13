@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useLang } from "@/context/LangContext";
 
 const LoginForm = () => {
   const [userType, setUserType] = useState("client");
@@ -9,6 +10,8 @@ const LoginForm = () => {
   const [creds, setCreds] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useLang();
+  const a = t.auth.login;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,22 +45,22 @@ const LoginForm = () => {
             Afrahi
           </h1>
           <h2 className="font-heading text-neutral-900 text-[26px] font-bold">
-            Welcome Back
+            {a.title}
           </h2>
           <p className="font-body text-neutral-600 text-[13px] mt-1">
-            Sign in to your account
+            {a.subtitle}
           </p>
         </div>
 
         <div className="w-full flex p-1 bg-neutral-200 rounded-lg mb-7">
-          {["client", "owner"].map((t) => (
+          {["client", "owner"].map((type) => (
             <button
-              key={t}
+              key={type}
               type="button"
-              onClick={() => setUserType(t)}
-              className={`flex-1 py-2 text-[13px] font-body font-bold rounded-md transition-all ${userType === t ? "bg-burgundy-700 text-white shadow" : "text-neutral-600 hover:text-neutral-900"}`}
+              onClick={() => setUserType(type)}
+              className={`flex-1 py-2 text-[13px] font-body font-bold rounded-md transition-all ${userType === type ? "bg-burgundy-700 text-white shadow" : "text-neutral-600 hover:text-neutral-900"}`}
             >
-              {t === "owner" ? "Hall Owner" : "Client"}
+              {type === "owner" ? a.owner : a.client}
             </button>
           ))}
         </div>
@@ -70,12 +73,12 @@ const LoginForm = () => {
           )}
           <div>
             <label className="font-body text-[11px] font-bold text-neutral-900 uppercase tracking-[1px] block mb-1.5">
-              Email Address
+              {a.email}
             </label>
             <input
               type="email"
               required
-              placeholder="name@example.com"
+              placeholder={a.emailPh}
               value={creds.email}
               onChange={(e) => setCreds({ ...creds, email: e.target.value })}
               className="w-full p-3 rounded-lg border border-neutral-300 focus:border-burgundy-700 outline-none font-body text-[13px] text-neutral-900 bg-white transition-colors"
@@ -84,13 +87,13 @@ const LoginForm = () => {
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="font-body text-[11px] font-bold text-neutral-900 uppercase tracking-[1px]">
-                Password
+                {a.password}
               </label>
               <a
                 href="#"
                 className="font-body text-[11px] text-burgundy-700 font-bold hover:underline"
               >
-                Forgot?
+                {a.forgot}
               </a>
             </div>
             <input
@@ -107,24 +110,24 @@ const LoginForm = () => {
             disabled={loading}
             className="w-full py-3.5 bg-burgundy-700 text-white font-body font-bold rounded-lg hover:bg-burgundy-800 transition-colors disabled:opacity-50 mt-1 text-[14px]"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? a.signingIn : a.signIn}
           </button>
         </form>
 
         <p className="mt-7 text-center font-body text-[13px] text-neutral-600">
-          Don't have an account?{" "}
+          {a.noAccount}{" "}
           <a
             href="/signup"
             className="text-burgundy-700 font-bold hover:underline"
           >
-            Sign Up
+            {a.signUp}
           </a>
         </p>
         <a
           href="/"
           className="block text-center mt-4 font-body text-[11px] text-neutral-500 hover:text-burgundy-700 transition-colors"
         >
-          ← Back to Home
+          {a.backHome}
         </a>
       </div>
     </main>

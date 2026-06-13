@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Star, Send } from "lucide-react";
+import { Send } from "lucide-react";
+import { useLang } from "@/context/LangContext";
 
 type Venue = {
   id: string;
@@ -52,6 +53,9 @@ type Message = {
 };
 
 export default function OwnerDashboard() {
+  const { t, isRTL } = useLang();
+  const d = t.ownerDash;
+
   const [tab, setTab] = useState<
     "venues" | "requests" | "add" | "reviews" | "messages"
   >("venues");
@@ -72,7 +76,6 @@ export default function OwnerDashboard() {
     phone: "",
   });
   const [imagePreview, setImagePreview] = useState("");
-
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selected, setSelected] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -137,7 +140,7 @@ export default function OwnerDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this venue?")) return;
+    if (!confirm(d.deleteConfirm)) return;
     try {
       await axios.delete(`/api/venues/${id}`);
       setVenues((p) => p.filter((v) => v.id !== id));
@@ -186,12 +189,12 @@ export default function OwnerDashboard() {
         setVenues((p) =>
           p.map((v) => (v.id === editingVenue.id ? { ...v, ...payload } : v)),
         );
-        setSuccess("Venue updated successfully!");
+        setSuccess(d.venueUpdated);
         setEditingVenue(null);
       } else {
         const { data } = await axios.post("/api/venues", payload);
         setVenues((p) => [...p, data.venue]);
-        setSuccess("Venue added successfully!");
+        setSuccess(d.venueAdded);
       }
       setForm({
         name: "",
@@ -217,12 +220,20 @@ export default function OwnerDashboard() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="font-body text-neutral-400">Loading...</p>
+        <p className="font-body text-neutral-400">{d.saving}</p>
       </div>
     );
 
+  const formFields = [
+    { label: d.venueName, key: "name", type: "text", ph: d.venueNamePh },
+    { label: d.location, key: "location", type: "text", ph: d.locationPh },
+    { label: d.phone_label, key: "phone", type: "tel", ph: d.phonePh },
+    { label: d.capacity, key: "capacity", type: "number", ph: d.capacityPh },
+    { label: d.priceDa, key: "price", type: "number", ph: d.pricePh },
+  ];
+
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen bg-neutral-100" dir={isRTL ? "rtl" : "ltr"}>
       {/* Header */}
       <div
         className="bg-white border-b border-neutral-300 px-4 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -230,10 +241,10 @@ export default function OwnerDashboard() {
       >
         <div>
           <h1 className="font-heading text-burgundy-700 text-[24px] sm:text-[28px] font-bold">
-            Owner Dashboard
+            {d.title}
           </h1>
           <p className="font-body text-neutral-600 text-[13px] mt-0.5">
-            Manage your venues and reservations
+            {d.subtitle}
           </p>
         </div>
         <button
@@ -244,7 +255,7 @@ export default function OwnerDashboard() {
           }
           className="self-start sm:self-auto font-body text-[13px] text-neutral-500 hover:text-burgundy-700 transition-colors"
         >
-          Logout →
+          {d.logout}
         </button>
       </div>
 
@@ -253,22 +264,22 @@ export default function OwnerDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {[
             {
-              label: "My Venues",
+              label: d.myVenues,
               val: venues.length,
               color: "text-burgundy-700",
             },
             {
-              label: "Pending Requests",
+              label: d.pendingRequests,
               val: pending.length,
               color: "text-warning-700",
             },
             {
-              label: "Confirmed",
+              label: d.confirmed,
               val: reservations.filter((r) => r.status === "confirmed").length,
               color: "text-success-700",
             },
             {
-              label: "Reviews",
+              label: d.reviews,
               val: ownerReviews.length,
               color: "text-info-700",
             },
@@ -291,14 +302,11 @@ export default function OwnerDashboard() {
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
           {[
-            { key: "venues", label: `My Venues (${venues.length})` },
-            { key: "requests", label: `Requests (${pending.length} pending)` },
-            { key: "reviews", label: `Reviews (${ownerReviews.length})` },
-            { key: "messages", label: `Messages (${contacts.length})` },
-            {
-              key: "add",
-              label: editingVenue ? "✏️ Edit Venue" : "+ Add Venue",
-            },
+            { key: "venues", label: d.tabVenues(venues.length) },
+            { key: "requests", label: d.tabRequests(pending.length) },
+            { key: "reviews", label: d.tabReviews(ownerReviews.length) },
+            { key: "messages", label: d.tabMessages(contacts.length) },
+            { key: "add", label: editingVenue ? d.tabEdit : d.tabAdd },
           ].map((t) => (
             <button
               key={t.key}
@@ -315,12 +323,12 @@ export default function OwnerDashboard() {
           <div className="flex flex-col gap-4 max-w-4xl pb-10">
             {venues.length === 0 ? (
               <div className="bg-white rounded-2xl p-16 text-center border border-neutral-300">
-                <p className="font-body text-neutral-500 mb-4">No venues yet</p>
+                <p className="font-body text-neutral-500 mb-4">{d.noVenues}</p>
                 <button
                   onClick={() => setTab("add")}
                   className="px-6 py-2.5 bg-burgundy-700 text-white rounded-lg font-body font-semibold text-[13px] hover:bg-burgundy-800 transition-colors"
                 >
-                  Add Your First Venue
+                  {d.addFirst}
                 </button>
               </div>
             ) : (
@@ -354,20 +362,23 @@ export default function OwnerDashboard() {
                             onClick={() => handleEdit(v)}
                             className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg font-body font-medium text-[12px] hover:border-burgundy-700 hover:text-burgundy-700 transition-colors"
                           >
-                            Edit
+                            {d.edit}
                           </button>
                           <button
                             onClick={() => handleDelete(v.id)}
                             className="px-4 py-2 border border-error-200 text-error-700 rounded-lg font-body font-medium text-[12px] hover:bg-error-50 transition-colors"
                           >
-                            Delete
+                            {d.delete}
                           </button>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {[
                           { icon: "/location-pin.svg", val: v.location },
-                          { icon: "/people.svg", val: `${v.capacity} guests` },
+                          {
+                            icon: "/people.svg",
+                            val: `${v.capacity} ${d.guests}`,
+                          },
                           { icon: "/phone.svg", val: v.phone || "—" },
                         ].map(({ icon, val }) => (
                           <div
@@ -386,7 +397,7 @@ export default function OwnerDashboard() {
                       <div className="mt-4 pt-4 border-t border-neutral-200 flex justify-between items-center">
                         <div>
                           <p className="font-body text-neutral-400 text-[10px] uppercase tracking-wider">
-                            Price
+                            {d.price}
                           </p>
                           <p className="font-body text-burgundy-700 text-[17px] font-bold">
                             {v.price.toLocaleString()} DA
@@ -406,15 +417,14 @@ export default function OwnerDashboard() {
           <div className="flex flex-col gap-5 max-w-4xl pb-10">
             <div className="flex items-center gap-3 mb-1">
               <h2 className="font-heading text-[22px] font-bold text-neutral-900">
-                Reservation Requests
+                {d.reservationRequests}
               </h2>
               {pending.length > 0 && (
                 <span className="bg-warning-50 border border-warning-500 text-warning-700 text-[10px] font-bold font-body px-3 py-1 rounded-full uppercase tracking-wide">
-                  {pending.length} Pending
+                  {pending.length} {d.pending_badge}
                 </span>
               )}
             </div>
-
             {reservations.length === 0 ? (
               <div
                 className="bg-white rounded-2xl p-16 text-center border border-neutral-300"
@@ -424,10 +434,10 @@ export default function OwnerDashboard() {
                   <img src="/calendar.svg" alt="" className="w-8 h-8" />
                 </div>
                 <p className="font-heading text-[18px] font-semibold text-neutral-900 mb-1">
-                  No requests yet
+                  {d.noRequests}
                 </p>
                 <p className="font-body text-neutral-500 text-[13px]">
-                  Reservation requests from clients will appear here
+                  {d.noRequestsDesc}
                 </p>
               </div>
             ) : (
@@ -469,34 +479,36 @@ export default function OwnerDashboard() {
                           {r.status}
                         </span>
                       </div>
-
                       <div className="grid grid-cols-2 gap-3 mb-5">
                         {[
                           {
                             icon: "/users.svg",
-                            label: "Client",
+                            label: d.client,
                             val: r.client.name,
                             sub: r.client.email,
                           },
                           {
                             icon: "/calendar.svg",
-                            label: "Event Date",
-                            val: new Date(r.date).toLocaleDateString("en-GB", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            }),
+                            label: d.eventDate,
+                            val: new Date(r.date).toLocaleDateString(
+                              isRTL ? "ar-DZ" : "en-GB",
+                              {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              },
+                            ),
                           },
                           {
                             icon: "/people.svg",
-                            label: "Guests",
-                            val: `${r.guests} guests`,
+                            label: d.guests_label,
+                            val: `${r.guests} ${d.guests}`,
                           },
                           ...(r.clientPhone
                             ? [
                                 {
                                   icon: "/phone.svg",
-                                  label: "Phone",
+                                  label: d.phone,
                                   val: r.clientPhone,
                                 },
                               ]
@@ -522,7 +534,6 @@ export default function OwnerDashboard() {
                           </div>
                         ))}
                       </div>
-
                       {isPending && (
                         <>
                           <div className="border-t border-neutral-200 mb-4" />
@@ -536,13 +547,13 @@ export default function OwnerDashboard() {
                                 alt=""
                                 className="w-4 h-4 brightness-0 invert"
                               />
-                              Accept
+                              {d.accept}
                             </button>
                             <button
                               onClick={() => handleStatus(r.id, "rejected")}
                               className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-white hover:bg-error-50 text-error-700 border border-error-200 hover:border-error-500 text-[13px] font-semibold font-body rounded-xl transition-all"
                             >
-                              Decline
+                              {d.decline}
                             </button>
                           </div>
                         </>
@@ -561,7 +572,7 @@ export default function OwnerDashboard() {
                               }}
                             />
                             <p className="font-body text-[13px] text-success-700 font-medium">
-                              Reservation confirmed — client notified
+                              {d.reservationConfirmed}
                             </p>
                           </div>
                         </>
@@ -571,7 +582,7 @@ export default function OwnerDashboard() {
                           <div className="border-t border-neutral-200 mb-4" />
                           <div className="bg-error-50 border border-error-100 rounded-xl px-4 py-3">
                             <p className="font-body text-[13px] text-error-700 font-medium">
-                              This request was declined
+                              {d.requestDeclined}
                             </p>
                           </div>
                         </>
@@ -589,7 +600,7 @@ export default function OwnerDashboard() {
           <div className="max-w-4xl pb-10">
             <div className="flex items-center gap-4 mb-6">
               <h2 className="font-heading text-neutral-900 text-[22px] font-bold">
-                Reviews
+                {d.reviews}
               </h2>
               {avgRating && (
                 <div className="flex items-center gap-1.5 bg-gold-100 border border-gold-200 px-3 py-1.5 rounded-full">
@@ -605,7 +616,7 @@ export default function OwnerDashboard() {
             </div>
             {ownerReviews.length === 0 ? (
               <div className="bg-white rounded-2xl p-16 text-center border border-neutral-300">
-                <p className="font-body text-neutral-500">No reviews yet</p>
+                <p className="font-body text-neutral-500">{d.noReviews}</p>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
@@ -626,7 +637,7 @@ export default function OwnerDashboard() {
                           </p>
                           <p className="font-body text-neutral-400 text-[11px]">
                             {new Date(rv.createdAt).toLocaleDateString(
-                              "en-GB",
+                              isRTL ? "ar-DZ" : "en-GB",
                               {
                                 day: "numeric",
                                 month: "long",
@@ -667,15 +678,14 @@ export default function OwnerDashboard() {
         {tab === "messages" && (
           <div className="max-w-4xl pb-10">
             <h2 className="font-heading text-neutral-900 text-[22px] font-bold mb-6">
-              Messages
+              {d.tabMessages(contacts.length)}
             </h2>
             {contacts.length === 0 ? (
               <div className="bg-white rounded-2xl p-16 text-center border border-neutral-300">
-                <p className="font-body text-neutral-500">No messages yet</p>
+                <p className="font-body text-neutral-500">{d.noMessages}</p>
               </div>
             ) : (
               <div className="flex flex-col lg:flex-row gap-4 h-[500px]">
-                {/* Contacts */}
                 <div className="w-full lg:w-64 flex-shrink-0 bg-white rounded-2xl border border-neutral-300 overflow-y-auto">
                   {contacts.map((c) => (
                     <button
@@ -697,12 +707,10 @@ export default function OwnerDashboard() {
                     </button>
                   ))}
                 </div>
-
-                {/* Chat */}
                 <div className="flex-1 bg-white rounded-2xl border border-neutral-300 flex flex-col overflow-hidden">
                   {!selected ? (
                     <div className="flex-1 flex items-center justify-center text-neutral-400 font-body text-[14px]">
-                      Select a contact
+                      {d.selectContact}
                     </div>
                   ) : (
                     <>
@@ -742,7 +750,7 @@ export default function OwnerDashboard() {
                           value={text}
                           onChange={(e) => setText(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                          placeholder="Type a message..."
+                          placeholder={d.descriptionPh}
                           className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 focus:border-burgundy-700 outline-none font-body text-[13px] transition-colors"
                         />
                         <button
@@ -769,53 +777,18 @@ export default function OwnerDashboard() {
               style={{ boxShadow: "0 4px 8px rgba(43,43,43,0.07)" }}
             >
               <h2 className="font-heading text-neutral-900 text-[22px] font-bold mb-1">
-                {editingVenue ? "Edit Venue" : "Add New Venue"}
+                {editingVenue ? d.editVenue : d.addVenue}
               </h2>
               <p className="font-body text-neutral-600 text-[13px] mb-6">
-                {editingVenue
-                  ? "Update your venue details"
-                  : "Fill in the details to list your venue"}
+                {editingVenue ? d.updateDetails : d.fillDetails}
               </p>
-
               {success && (
                 <div className="mb-5 p-3.5 bg-success-50 border border-success-100 rounded-xl font-body text-success-700 text-[13px]">
                   {success}
                 </div>
               )}
-
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                {[
-                  {
-                    label: "Venue Name",
-                    key: "name",
-                    type: "text",
-                    ph: "e.g. Dar El Andalous",
-                  },
-                  {
-                    label: "Location",
-                    key: "location",
-                    type: "text",
-                    ph: "e.g. Algiers, Hussein Dey",
-                  },
-                  {
-                    label: "Phone",
-                    key: "phone",
-                    type: "tel",
-                    ph: "0550 000 000",
-                  },
-                  {
-                    label: "Capacity",
-                    key: "capacity",
-                    type: "number",
-                    ph: "e.g. 500",
-                  },
-                  {
-                    label: "Price (DA)",
-                    key: "price",
-                    type: "number",
-                    ph: "e.g. 150000",
-                  },
-                ].map((f) => (
+                {formFields.map((f) => (
                   <div key={f.key}>
                     <label className="font-body text-[11px] font-bold text-neutral-900 uppercase tracking-[1px] block mb-1.5">
                       {f.label}
@@ -832,14 +805,13 @@ export default function OwnerDashboard() {
                     />
                   </div>
                 ))}
-
                 <div>
                   <label className="font-body text-[11px] font-bold text-neutral-900 uppercase tracking-[1px] block mb-1.5">
-                    Description
+                    {d.description}
                   </label>
                   <textarea
                     rows={4}
-                    placeholder="Describe your venue..."
+                    placeholder={d.descriptionPh}
                     value={form.description}
                     onChange={(e) =>
                       setForm({ ...form, description: e.target.value })
@@ -847,10 +819,9 @@ export default function OwnerDashboard() {
                     className="w-full p-3 rounded-lg border border-neutral-300 focus:border-burgundy-700 outline-none font-body text-[13px] text-neutral-900 resize-none transition-colors"
                   />
                 </div>
-
                 <div>
                   <label className="font-body text-[11px] font-bold text-neutral-900 uppercase tracking-[1px] block mb-1.5">
-                    Venue Photo
+                    {d.venuePhoto}
                   </label>
                   <input
                     type="file"
@@ -868,7 +839,6 @@ export default function OwnerDashboard() {
                     </div>
                   )}
                 </div>
-
                 <div className="flex gap-3 pt-2">
                   <button
                     type="submit"
@@ -876,10 +846,10 @@ export default function OwnerDashboard() {
                     className="flex-1 py-3.5 bg-burgundy-700 text-white font-body font-bold rounded-lg hover:bg-burgundy-800 transition-colors disabled:opacity-50 text-[14px]"
                   >
                     {submitting
-                      ? "Saving..."
+                      ? d.saving
                       : editingVenue
-                        ? "Update Venue"
-                        : "Add Venue"}
+                        ? d.updateVenue
+                        : d.addVenue}
                   </button>
                   {editingVenue && (
                     <button
@@ -900,7 +870,7 @@ export default function OwnerDashboard() {
                       }}
                       className="px-6 py-3.5 border border-neutral-300 text-neutral-600 font-body font-semibold rounded-lg hover:bg-neutral-50 transition-colors text-[14px]"
                     >
-                      Cancel
+                      {d.cancel}
                     </button>
                   )}
                 </div>

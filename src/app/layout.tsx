@@ -11,7 +11,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Afrahi",
-  description: "Book your perfect venue",
+  description: "Algeria's Premier Venue Platform",
 };
 
 export default function RootLayout({

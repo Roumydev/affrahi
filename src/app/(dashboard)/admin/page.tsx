@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { Clock, MessageSquare, CheckCircle, Send } from "lucide-react";
+import { useLang } from "@/context/LangContext";
 
 type Stats = {
   totalUsers: number;
@@ -36,14 +37,6 @@ type Report = {
   user: { name: string; email: string; role: string };
 };
 
-const catLabel: Record<string, string> = {
-  technical: "Technical Issue",
-  booking: "Booking Problem",
-  payment: "Payment Issue",
-  owner: "Problem with Owner",
-  client: "Problem with Client",
-  other: "Other",
-};
 const statusCfg: Record<
   string,
   { bg: string; text: string; icon: React.ReactNode }
@@ -71,6 +64,18 @@ const resStat: Record<string, { bg: string; text: string }> = {
 };
 
 export default function AdminDashboard() {
+  const { t, isRTL } = useLang();
+  const d = t.adminDash;
+
+  const catLabel: Record<string, string> = {
+    technical: d.catTechnical,
+    booking: d.catBooking,
+    payment: d.catPayment,
+    owner: d.catOwner,
+    client: d.catClient,
+    other: d.catOther,
+  };
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<RecentRes[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -128,44 +133,44 @@ export default function AdminDashboard() {
   if (!stats)
     return (
       <div className="p-8 text-center font-body text-neutral-500">
-        Loading...
+        {d.loading}
       </div>
     );
 
   const pendingReports = reports.filter((r) => r.status === "pending").length;
   const statCards = [
     {
-      label: "Total Users",
+      label: d.totalUsers,
       val: stats.totalUsers,
       bg: "bg-info-50",
       text: "text-info-700",
     },
     {
-      label: "Total Venues",
+      label: d.totalVenues,
       val: stats.totalVenues,
       bg: "bg-success-50",
       text: "text-success-700",
     },
     {
-      label: "Total Reservations",
+      label: d.totalReservations,
       val: stats.totalReservations,
       bg: "bg-neutral-200",
       text: "text-neutral-700",
     },
     {
-      label: "Pending",
+      label: d.pending,
       val: stats.pendingReservations,
       bg: "bg-warning-50",
       text: "text-warning-700",
     },
     {
-      label: "Reviews",
+      label: d.reviews,
       val: reviews.length,
       bg: "bg-burgundy-50",
       text: "text-burgundy-700",
     },
     {
-      label: "Reports",
+      label: d.reports,
       val: reports.length,
       bg: "bg-error-50",
       text: "text-error-700",
@@ -173,14 +178,14 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen bg-neutral-100" dir={isRTL ? "rtl" : "ltr"}>
       <div className="bg-white border-b border-neutral-300 px-4 sm:px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-burgundy-700 text-[26px] font-bold">
-            Admin Dashboard
+            {d.title}
           </h1>
           <p className="font-body text-neutral-600 text-[13px] mt-0.5">
-            Platform overview and management
+            {d.subtitle}
           </p>
         </div>
         <button
@@ -191,7 +196,7 @@ export default function AdminDashboard() {
           }
           className="self-start sm:self-auto font-body text-[13px] text-neutral-500 hover:text-burgundy-700 transition-colors"
         >
-          Logout →
+          {d.logout}
         </button>
       </div>
 
@@ -217,18 +222,18 @@ export default function AdminDashboard() {
           {[
             {
               href: "/admin/users",
-              label: "All Users",
+              label: d.allUsers,
               style: "bg-burgundy-700 text-white hover:bg-burgundy-800",
             },
             {
               href: "/admin/venues",
-              label: "Manage Venues",
+              label: d.manageVenues,
               style:
                 "bg-white border border-burgundy-700 text-burgundy-700 hover:bg-burgundy-50",
             },
             {
               href: "/admin/reservations",
-              label: "All Reservations",
+              label: d.allReservations,
               style:
                 "bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100",
             },
@@ -245,11 +250,11 @@ export default function AdminDashboard() {
 
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
-            { key: "overview", label: "Recent Reservations" },
-            { key: "reviews", label: `Reviews (${reviews.length})` },
+            { key: "overview", label: d.tabOverview },
+            { key: "reviews", label: d.tabReviews(reviews.length) },
             {
               key: "reports",
-              label: `Reports (${reports.length})${pendingReports > 0 ? ` • ${pendingReports} new` : ""}`,
+              label: d.tabReports(reports.length, pendingReports),
             },
           ].map((t) => (
             <button
@@ -269,7 +274,7 @@ export default function AdminDashboard() {
           >
             <div className="px-6 py-4 border-b border-neutral-200">
               <h2 className="font-heading text-neutral-900 text-[20px] font-bold">
-                Recent Reservations
+                {d.recentReservations}
               </h2>
             </div>
             <div className="divide-y divide-neutral-100">
@@ -285,11 +290,10 @@ export default function AdminDashboard() {
                         {r.client.name} → {r.venue.name}
                       </p>
                       <p className="font-body text-neutral-500 text-[12px] mt-0.5">
-                        {new Date(r.date).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
+                        {new Date(r.date).toLocaleDateString(
+                          isRTL ? "ar-DZ" : "en-GB",
+                          { day: "numeric", month: "long", year: "numeric" },
+                        )}
                       </p>
                     </div>
                     <span
@@ -308,7 +312,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-4">
             {reviews.length === 0 ? (
               <div className="bg-white rounded-2xl p-16 text-center border border-neutral-300">
-                <p className="font-body text-neutral-400">No reviews yet</p>
+                <p className="font-body text-neutral-400">{d.noReviews}</p>
               </div>
             ) : (
               reviews.map((rv) => (
@@ -327,11 +331,10 @@ export default function AdminDashboard() {
                           {rv.user.name}
                         </p>
                         <p className="font-body text-neutral-500 text-[11px]">
-                          {new Date(rv.createdAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
+                          {new Date(rv.createdAt).toLocaleDateString(
+                            isRTL ? "ar-DZ" : "en-GB",
+                            { day: "numeric", month: "long", year: "numeric" },
+                          )}
                         </p>
                       </div>
                     </div>
@@ -365,7 +368,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-4">
             {reports.length === 0 ? (
               <div className="bg-white rounded-2xl p-16 text-center border border-neutral-300">
-                <p className="font-body text-neutral-400">No reports yet</p>
+                <p className="font-body text-neutral-400">{d.noReports}</p>
               </div>
             ) : (
               reports.map((rp) => {
@@ -401,11 +404,10 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <span className="font-body text-neutral-400 text-[11px] flex-shrink-0">
-                          {new Date(rp.createdAt).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                          {new Date(rp.createdAt).toLocaleDateString(
+                            isRTL ? "ar-DZ" : "en-GB",
+                            { day: "numeric", month: "short", year: "numeric" },
+                          )}
                         </span>
                       </div>
                       <p className="font-body text-neutral-700 text-[13px] leading-relaxed bg-neutral-50 rounded-xl p-4 mb-4">
@@ -414,7 +416,7 @@ export default function AdminDashboard() {
                       {rp.adminReply && (
                         <div className="mb-4 bg-info-50 border border-info-100 rounded-xl p-4">
                           <p className="font-body text-[10px] font-bold text-info-700 uppercase tracking-wide mb-1">
-                            Admin Reply
+                            {d.adminReply}
                           </p>
                           <p className="font-body text-info-700 text-[13px] leading-relaxed">
                             {rp.adminReply}
@@ -431,7 +433,7 @@ export default function AdminDashboard() {
                                 [rp.id]: e.target.value,
                               }))
                             }
-                            placeholder="Write a reply..."
+                            placeholder={d.replyPh}
                             onKeyDown={(e) =>
                               e.key === "Enter" && sendReply(rp.id)
                             }
@@ -455,7 +457,7 @@ export default function AdminDashboard() {
                               onClick={() => updateStatus(rp.id, "resolved")}
                               className="px-4 py-2.5 bg-success-50 text-success-700 border border-success-100 rounded-lg font-body text-[12px] font-semibold hover:bg-success-100 transition-colors disabled:opacity-50"
                             >
-                              Resolve
+                              {d.resolve}
                             </button>
                           )}
                           {rp.status === "pending" && (
@@ -464,7 +466,7 @@ export default function AdminDashboard() {
                               onClick={() => updateStatus(rp.id, "reviewed")}
                               className="px-4 py-2.5 bg-info-50 text-info-700 border border-info-100 rounded-lg font-body text-[12px] font-semibold hover:bg-info-100 transition-colors disabled:opacity-50"
                             >
-                              Mark Reviewed
+                              {d.markReviewed}
                             </button>
                           )}
                         </div>
